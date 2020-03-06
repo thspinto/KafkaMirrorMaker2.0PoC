@@ -11,17 +11,17 @@ services:
       KAFKA_CREATE_TOPICS: "test:1:1"
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/kb1
   kafka2:
-        image:  wurstmeister/kafka:2.12-2.2.1
-        environment:
-          KAFKA_ADVERTISED_HOST_NAME: kafka2
-          KAFKA_CREATE_TOPICS: "test:1:1"
-          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/kb2
+    image:  wurstmeister/kafka:2.12-2.2.1
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka2
+      KAFKA_CREATE_TOPICS: "test:1:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/kb2
   mirror:
-        image:  wurstmeister/kafka:2.12-2.4.0
-        environment:
-          KAFKA_ADVERTISED_HOST_NAME: mirror
-          KAFKA_CREATE_TOPICS: "test:1:1"
-          KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/mirror
+    image: thiagoquintoandar/kafka:mirror-maker-consumer-sync
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: mirror
+      KAFKA_CREATE_TOPICS: "test:1:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/mirror
   mysql:
     image: debezium/example-mysql:1.0
     ports:
@@ -40,3 +40,18 @@ services:
      - CONFIG_STORAGE_TOPIC=my_connect_configs
      - OFFSET_STORAGE_TOPIC=my_connect_offsets
      - STATUS_STORAGE_TOPIC=my_connect_statuses
+  proxy:
+    image: grepplabs/kafka-proxy:latest
+    ports:
+      - 9092:9092
+      - 19092:19092
+    command:
+      - 'server'
+      - '--log-format=json'
+      - '--bootstrap-server-mapping=kafka1:9092,proxy:9092'
+      - '--proxy-request-buffer-size=32768'
+      - '--proxy-response-buffer-size=32768'
+      - '--proxy-listener-read-buffer-size=32768'
+      - '--proxy-listener-write-buffer-size=131072'
+      - '--kafka-connection-read-buffer-size=131072'
+      - '--kafka-connection-write-buffer-size=32768'
