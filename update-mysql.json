@@ -8,6 +8,7 @@
      "database.server.id": "184054",
      "database.server.name": "dbserver1",
      "database.whitelist": "inventory",
-     "database.history.kafka.bootstrap.servers": "kafka2:9092",
+     "producer.bootstrap.brokers": "kafkaB2:9092",
+     "database.history.kafka.bootstrap.servers": "kafkaA2:9092",
      "database.history.kafka.topic": "schema-changes.inventory"
 }

@@ -4,16 +4,28 @@ services:
     image: wurstmeister/zookeeper
     ports:
       - "2181:2181"
-  kafka1:
+  kafkaA1:
     image:  wurstmeister/kafka:1.0.1
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: kafka1
+      KAFKA_ADVERTISED_HOST_NAME: kafkaA1
       KAFKA_CREATE_TOPICS: "test:1:1"
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/kb1
-  kafka2:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/kba
+  kafkaA2:
+    image:  wurstmeister/kafka:1.0.1
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafkaA2
+      KAFKA_CREATE_TOPICS: "test:1:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/kba
+  kafkaB1:
     image:  wurstmeister/kafka:2.12-2.2.1
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: kafka2
+      KAFKA_ADVERTISED_HOST_NAME: kafkaB1
+      KAFKA_CREATE_TOPICS: "test:1:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/kb2
+  kafkaB2:
+    image:  wurstmeister/kafka:2.12-2.2.1
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafkaB2
       KAFKA_CREATE_TOPICS: "test:1:1"
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/kb2
   mirror:
@@ -35,8 +47,9 @@ services:
     ports:
      - 8083:8083
     environment:
-     - BOOTSTRAP_SERVERS=kafka2:9092
+     - BOOTSTRAP_SERVERS=kafkaB1:9092,kafkaB2:9092
      - GROUP_ID=1
+     - CONNECT_CONNECTOR_CLIENT_CONFIG_OVERRIDE_POLICY=All
      - CONFIG_STORAGE_TOPIC=my_connect_configs
      - OFFSET_STORAGE_TOPIC=my_connect_offsets
      - STATUS_STORAGE_TOPIC=my_connect_statuses
@@ -45,10 +58,12 @@ services:
     ports:
       - 9092:9092
       - 19092:19092
+      - 29092:29092
     command:
       - 'server'
       - '--log-format=json'
-      - '--bootstrap-server-mapping=kafka1:9092,proxy:9092'
+      - '--bootstrap-server-mapping=kafkaB1:9092,proxy:19092'
+      - '--bootstrap-server-mapping=kafkaB2:9092,proxy:29092'
       - '--proxy-request-buffer-size=32768'
       - '--proxy-response-buffer-size=32768'
       - '--proxy-listener-read-buffer-size=32768'

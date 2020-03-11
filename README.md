@@ -33,7 +33,7 @@ curl -i -X POST -H "Accept:application/json" -H  "Content-Type:application/json"
 ```
 Update the connector
 ```bash
-curl -i -X PUT -H "Accept:application/json"  -H  "Content-Type:application/json" https://localhost:8083/connectors/inventory-connector/config/ -d @update-mysql.json
+curl -i -X PUT -H "Accept:application/json"  -H  "Content-Type:application/json" http://localhost:8083/connectors/inventory-connector/config/ -d @update-mysql.json
 ```
 
 After updating the connector I was able to update Debezium's configuration pointing to the new cluster. Debezium did not loose its configuration.
@@ -52,3 +52,12 @@ Launch with: `connect-mirror-maker.sh mm2.properties`
 * The other strategy would be migrating with downtime, this requires mapping the producer/consumer graph.
 
 * Proposal migrate critical flows consumers beforehand using replication. Mass migrate the other flows updating the DNS and roll restarting the services.
+
+
+## Kafka Proxy Tests
+
+Run the producer through the proxy and put consumers on the two kafka cluster to see how a fallback the the new cluster would affect the producers.
+
+```
+docker-compose exec kafka1 kafka-verifiable-producer.sh --broker-list proxy:9092 --throughput 1 --topic TestTopic
+```

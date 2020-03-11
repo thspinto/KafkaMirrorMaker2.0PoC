@@ -10,6 +10,7 @@
         "database.server.id": "184054",
         "database.server.name": "dbserver1",
         "database.whitelist": "inventory",
+        "database.topic.kafka.bootstrap.servers": "kafka1:9092",
         "database.history.kafka.bootstrap.servers": "kafka1:9092",
         "database.history.kafka.topic": "schema-changes.inventory"
     }
