@@ -1,0 +1,139 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: kafka-proxy
+  name: kafka-proxy
+spec:
+  ports:
+  - name: kafka-proxy1
+    port: 32400
+    protocol: TCP
+    targetPort: 32400
+  - name: kafka-proxy2
+    port: 32401
+    protocol: TCP
+    targetPort: 32401
+  - name: kafka-proxy3
+    port: 32402
+    protocol: TCP
+    targetPort: 32402
+  selector:
+    app: kafka-proxy
+  sessionAffinity: None
+  type: ClusterIP
+
+---
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+    name: kafka-proxy
+spec:
+  selector:
+    matchLabels:
+      app: kafka-proxy
+  replicas: 1
+  serviceName: kafka-proxy
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+      labels:
+        app: kafka-proxy
+    spec:
+      containers:
+        - name: kafka-proxy
+          image: grepplabs/kafka-proxy:latest
+          args:
+            - 'server'
+            - '--log-format=json'
+            - '--bootstrap-server-mapping=kafka-proxy-0:9092,0.0.0.0:32400'
+            - '--bootstrap-server-mapping=kafka-proxy-1:9092,0.0.0.0:32401'
+            - '--bootstrap-server-mapping=kafka-proxy-2:9092,0.0.0.0:32402'
+            - '--proxy-request-buffer-size=32768'
+            - '--proxy-response-buffer-size=32768'
+            - '--proxy-listener-read-buffer-size=32768'
+            - '--proxy-listener-write-buffer-size=131072'
+            - '--kafka-connection-read-buffer-size=131072'
+            - '--kafka-connection-write-buffer-size=32768'
+          ports:
+          - name: metrics
+            containerPort: 9080
+          - name: kafka-0
+            containerPort: 32400
+          - name: kafka-1
+            containerPort: 32401
+          - name: kafka-2
+            containerPort: 32402
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9080
+            initialDelaySeconds: 5
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 9080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 2
+            failureThreshold: 5
+          resources:
+            requests:
+              memory: 128Mi
+              cpu: 1000m
+      restartPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: kafka-proxy-0
+  name: kafka-proxy-0
+spec:
+  ports:
+  - name: kafka-proxy-0
+    port: 9092
+    protocol: TCP
+    targetPort: 32400
+  selector:
+    app: kafka-proxy
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: kafka-proxy-1
+  name: kafka-proxy-1
+spec:
+  ports:
+  - name: kafka-proxy-1
+    port: 9092
+    protocol: TCP
+    targetPort: 32401
+  selector:
+    app: kafka-proxy
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: kafka-proxy-2
+  name: kafka-proxy-2
+spec:
+  ports:
+  - name: kafka-proxy-2
+    port: 9092
+    protocol: TCP
+    targetPort: 32402
+  selector:
+    app: kafka-proxy
+  type: ClusterIP

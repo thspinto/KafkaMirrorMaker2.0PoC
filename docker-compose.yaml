@@ -47,7 +47,7 @@ services:
     ports:
      - 8083:8083
     environment:
-     - BOOTSTRAP_SERVERS=kafkaB1:9092,kafkaB2:9092
+     - BOOTSTRAP_SERVERS=kafkaA1:9092,kafkaA2:9092
      - GROUP_ID=1
      - CONNECT_CONNECTOR_CLIENT_CONFIG_OVERRIDE_POLICY=All
      - CONFIG_STORAGE_TOPIC=my_connect_configs

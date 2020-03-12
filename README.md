@@ -61,3 +61,5 @@ Run the producer through the proxy and put consumers on the two kafka cluster to
 ```
 docker-compose exec kafka1 kafka-verifiable-producer.sh --broker-list proxy:9092 --throughput 1 --topic TestTopic
 ```
+
+It's not a good idea to use proxy to change producers/consumers to a new cluster. Consumers loose tracking of their group, producer might try to produce to the wrong broker.
