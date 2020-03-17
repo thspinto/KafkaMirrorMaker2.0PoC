@@ -1,0 +1,32 @@
+# This is and example of a docker file you would use to build your own version of kafka
+FROM openjdk:8u212-jre-alpine
+
+ARG kafka_version=2.4.0
+ARG scala_version=2.12
+ARG glibc_version=2.30-r0
+ARG exporter_version=0.12.0
+
+ENV KAFKA_VERSION=$kafka_version \
+    SCALA_VERSION=$scala_version \
+    KAFKA_HOME=/opt/kafka \
+    GLIBC_VERSION=$glibc_version \
+    KAFKA_OPTS="-javaagent:/opt/kafka/prometheus/jmx_prometheus_javaagent-$exporter_version.jar=7071:/opt/kafka/prometheus/prometheus_exporter.yaml"
+
+ENV PATH=${PATH}:${KAFKA_HOME}/bin
+
+RUN apk add --no-cache bash  \
+ && wget https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-${GLIBC_VERSION}.apk \
+ && apk add --no-cache --allow-untrusted glibc-${GLIBC_VERSION}.apk \
+ && rm glibc-${GLIBC_VERSION}.apk \
+ sudo mkdir /opt/kafka/prometheus/ \
+ sudo wget -P /opt/kafka/prometheus/ https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/$exporter_version/jmx_prometheus_javaagent-$exporter_version.jar
+
+
+COPY . /opt/kafka
+COPY prometheus_exporter.yaml /opt/kafka/prometheus/prometheus_exporter.yaml
+
+VOLUME ["/kafka"]
+
+# Use "exec" form so that it runs as PID 1 (useful for graceful shutdown)
+ENTRYPOINT [ "/bin/bash", "-c", "--" ]
+CMD [ "while true; do sleep 30; done;" ]
