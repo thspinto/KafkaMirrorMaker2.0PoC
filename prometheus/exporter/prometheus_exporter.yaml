@@ -1,15 +1,19 @@
 lowercaseOutputName: true
 
 rules:
+- pattern: kafka.connect.mirror<type=MirrorSourceConnector, target=(.+), topic=(.+), partition=(.*)><>(.+):\w*
+  name: kafka_mirror_$4
+  type: GAUGE
+  labels:
+    target: "$1"
+    topic: "$2"
+    partition: "$3"
 
-- pattern: kafka.producer<type=producer-metrics, client-id=(.+)><>(.+):\w*
-  name: kafka_producer_$2
-- pattern: kafka.consumer<type=consumer-metrics, client-id=(.+)><>(.+):\w*
-  name: kafka_consumer_$2
-- pattern: kafka.consumer<type=consumer-fetch-manager-metrics, client-id=(.+)><>(.+):\w*
-  name: kafka_consumer_$2
-- pattern: kafka.connect<type=connect-metrics, client-id=(.+)><>(.+):\w*
-  name: kafka_connect_$2
+- pattern: kafka.(.*)<type=(.*), client-id=(.+)><>(.+):\w*
+  name: kafka_$2_$4
+  labels:
+    client_id: "$3"
+
 # Special cases and very specific rules
 - pattern : kafka.server<type=(.+), name=(.+), clientId=(.+), topic=(.+), partition=(.*)><>Value
   name: kafka_server_$1_$2

@@ -32,12 +32,24 @@ services:
     image: thiagoquintoandar/kafka:mirror-maker-consumer-sync
     entrypoint: connect-mirror-maker.sh
     command: mm2.properties
+    ports:
+    - 7072:7072
+    - 7071:7071
     environment:
+      KAFKA_JMX_OPTS: "-Djava.rmi.server.hostname=192.168.1.180
+      -Dcom.sun.management.jmxremote=true
+      -Dcom.sun.management.jmxremote.port=7072
+      -Dcom.sun.management.jmxremote.rmi.port=7072
+      -Dcom.sun.management.jmxremote.local.only=false
+      -Dcom.sun.management.jmxremote.authenticate=false
+      -Dcom.sun.management.jmxremote.ssl=false"
+      KAFKA_OPTS: "-javaagent:/opt/kafka/prometheus/jmx_prometheus_javaagent-0.12.0.jar=7071:/opt/kafka/prometheus/configs/prometheus_exporter.yaml"
       KAFKA_ADVERTISED_HOST_NAME: mirror
       KAFKA_CREATE_TOPICS: "test:1:1"
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/mirror
     volumes:
       - ./mm2.properties:/mm2.properties
+      - ./prometheus/exporter:/opt/kafka/prometheus/configs
   mysql:
     image: debezium/example-mysql:1.0
     ports:
