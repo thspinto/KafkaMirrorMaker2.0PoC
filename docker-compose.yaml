@@ -29,7 +29,7 @@ services:
       KAFKA_CREATE_TOPICS: "test:1:1"
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181/kb2
   mirror:
-    image: thiagoquintoandar/kafka:mirror-maker-consumer-sync
+    image: thiagoquintoandar/kafka:mm-cg-sync
     entrypoint: connect-mirror-maker.sh
     command: mm2.properties
     ports:

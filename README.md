@@ -11,12 +11,12 @@ docker compose up -d
 
 Run some producers:
 ```bash
-docker-compose exec mirror kafka-verifiable-producer.sh --broker-list kafka1:9092 --throughput 1 --topic TestTopic
+docker-compose exec mirror kafka-verifiable-producer.sh --broker-list kafkaA1:9092 --throughput 1 --topic TestTopic
 ```
 
 Run some consumers:
 ```bash
-docker-compose exec mirror kafka-console-consumer.sh --bootstrap-server kafka1:9092 --group=test --topic TestTopic
+docker-compose exec mirror kafka-console-consumer.sh --bootstrap-server kafkaA1:9092 --group=test --topic TestTopic
 ```
 
 ## Debezium
@@ -63,3 +63,15 @@ docker-compose exec kafka1 kafka-verifiable-producer.sh --broker-list proxy:9092
 ```
 
 It's not a good idea to use proxy to change producers/consumers to a new cluster. Consumers loose tracking of their group, producer might try to produce to the wrong broker.
+
+## MirroMaker 2.0 group offset sync
+
+[This PR](https://github.com/apache/kafka/pull/7577) implements que group offset sync between clusters. But if does not create consumer groups in the target cluster.
+
+```
+kafka-consumer-groups.sh --bootstrap-server kafkaA1:9092 --list > groups1.txt & kafka-consumer-groups.sh --bootstrap-server kafkaB1:9092 --list > groups2.txt
+comm -23 groups1.txt groups2.txt
+kafka-consumer-groups.sh --bootstrap-server kafkaA1:9092 --group testx --reset-offsets --to-current --topic TestTopic --execute
+```
+
+**Doesn't work**: Testing metadata isn't updated, so you need to restart mirror maker 2.0 to update topics and consumer groups.
