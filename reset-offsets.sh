@@ -1,5 +1,5 @@
 #!/bin/bash
-BOOTSTRAP_SERVER=kafka-prod-0.quintoandar.com.br:9092
+BOOTSTRAP_SERVER=kafka:9092
 
 function reset_offsets() {
   local GROUP=$1
@@ -13,7 +13,7 @@ function main () {
   for GROUP in $CGROUPS
   do
     echo "Iteration on $GROUP"
-    TOPICS="$(kafka-consumer-groups.sh --bootstrap-server $BOOTSTRAP_SERVER --describe --group $GROUP | cut -d' ' -f1 | tail -n +3 | sort | uniq)"
+    TOPICS="$(kafka-consumer-groups.sh --bootstrap-server $BOOTSTRAP_SERVER --describe --group $GROUP | tr -s ' ' | cut -d' ' -f2 | tail -n +3 | sort | uniq)"
     for TOPIC in $TOPICS
     do
       echo "Reseting $TOPIC"
