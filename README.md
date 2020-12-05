@@ -6,7 +6,7 @@ Kafka migration strategy tests
 
 Start stack:
 ```bash
-docker compose up -d
+docker-compose up -d
 ```
 
 Run some producers:
